@@ -4,11 +4,16 @@ import java.io.FileReader;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
+
+import com.css.java.functions.FilterFun;
+import com.css.java.functions.FlatMapFun;
+import com.css.java.functions.LoopFunction;
+import com.css.java.functions.MapFun;
 
 /**
  * Spark Batch Job Read File from specified location
@@ -21,8 +26,9 @@ import org.apache.spark.sql.SparkSession;
  *
  */
 public class FileToHive implements Serializable {
+
 	SparkSession spark;
-	JavaSparkContext jsc;
+	// JavaSparkContext jsc;
 	Properties props;
 
 	FileToHive(String arg) {
@@ -35,7 +41,7 @@ public class FileToHive implements Serializable {
 		}
 		System.out.println("FileToHive::props:" + props);
 		this.spark = SparkSession.builder().appName(props.getProperty("app.name")).enableHiveSupport().getOrCreate();
-		this.jsc = new JavaSparkContext(spark.sparkContext());
+		// this.jsc = new JavaSparkContext(spark.sparkContext());
 	}
 
 	public void start() throws Exception {
@@ -46,11 +52,27 @@ public class FileToHive implements Serializable {
 				.load(props.getProperty("input.file.name"));
 		System.out.println("start::itemDF:" + itemDF);
 		itemDF.show(true);
-		itemDF.foreach(new ForeachFunction() {
-			public void call(Object t) throws Exception {
-				System.out.println("foreach::t:" + t);
-			}
-		});
+
+		// Action Call: For-Each:
+		itemDF.foreach(new LoopFunction());
+
+		// Map: One-to-One Transformation call
+		Dataset<Row> mapDF = itemDF.map(new MapFun(), Encoders.STRING());
+		System.out.println("start::mapDF:" + mapDF);
+
+		// Flat-Map: One-to-Many Transformation Call
+		Dataset<Row> flatMapDF = itemDF.flatMap(new FlatMapFun(), Encoders.STRING());
+		System.out.println("start::flatMapDF:" + flatMapDF);
+
+		Dataset<Row> filterDF = itemDF.filter(new FilterFun());
+		System.out.println("start::filterDF:" + filterDF);
+
+		// Action: Write
+		itemDF.write().mode(SaveMode.Overwrite) // .sortBy("item_name") // .partitionBy("is_active")
+				.json(props.getProperty("output.path"));
+		System.out.println("start::itemDF done writing to path:" + props.getProperty("output.path"));
+		//https://stackoverflow.com/questions/52799025/error-using-spark-save-does-not-support-bucketing-right-now
+
 	}
 
 	public void stop() {

@@ -39,3 +39,6 @@ echo "Submitting Spark Job File2Hive"
 --executor-cores 1 \
 --class com.css.java.FileToHive \
 ../bin/spark-java-0.0.1-SNAPSHOT.jar file2hive.properties
+
+
+hadoop fs -ls /user/test/output/json/

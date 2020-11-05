@@ -1,0 +1,38 @@
+0: cd <project-root>
+
+1: Git clone
+git clone https://github.com/sunmiri/spark-java.git
+
+2: git checkout
+
+3: git pull (for latest)
+
+
+4: Eclipse -> Import Project -> Maven Project -> <project-root>/spark-java/
+
+5: Eclipse -> Select "pom.xml" -> Right Click -> Run Al ->  "Maven build..."
+goals: "clean compile install"
+
+6: Watch for zip file under <project-root>/spark-java/target
+
+7: cd <project-root>/spark-java/target
+
+8: scp spark-java-0.0.1-SNAPSHOT-bin.zip root@<virtualbox-ip>:/tmp
+
+9: ssh root@<virtualbox-ip>
+
+10: scp /tmp/spark-java-0.0.1-SNAPSHOT-bin.zip root@<hdp-sandbox-ip>:/tmp/
+
+11: ssh root@<hdp-sandbox-ip>
+
+12: mkdir ~/test
+
+13: cp /tmp/spark-java-0.0.1-SNAPSHOT-bin.zip ~/test
+
+14: cd ~/test
+
+15: jar -xvf spark-java-0.0.1-SNAPSHOT-bin.zip
+
+16: cd scripts
+
+17: sh runcmd_file2hive.sh
