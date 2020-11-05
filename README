@@ -1,0 +1,23 @@
+1:sunilmiriyala@sunilmac spark-training % ssh root@192.168.5.137
+"hadoop"
+
+2:[root@sandbox-host ~]# scp /tmp/spark-java-0.0.1-SNAPSHOT-bin.zip root@172.18.0.2:/tmp/
+
+2:[root@sandbox-host ~]# ssh root@172.18.0.2
+"sandbox301"
+[root@sandbox-hdp ~]# mkdir -p test                                                                                      
+[root@sandbox-hdp ~]# mv /tmp/spark-java-0.0.1-SNAPSHOT-bin.zip ~/test/                                                  
+[root@sandbox-hdp test]# jar -xvf spark-java-0.0.1-SNAPSHOT-bin.zip                                                      
+
+
+
+3: WebUi:
+ssh --> root/sandbox301
+ambari-admin-password-reset new user/pass: admin/admin
+
+
+sunilmiriyala@sunilmac ~ % cd ~/CirrusSS/A-Cloud/Training/Spark-Java/spark-training 
+sunilmiriyala@sunilmac spark-training % scp target/spark-java-0.0.1-SNAPSHOT-bin.zip root@192.168.5.137:/tmp/              
+sunilmiriyala@sunilmac spark-training % ssh root@192.168.5.137                                               
+[root@sandbox-host ~]# docker ps
+[root@sandbox-host ~]# docker cp /tmp/spark-java-0.0.1-SNAPSHOT-bin.zip 1ed428db17a0:/tmp/
