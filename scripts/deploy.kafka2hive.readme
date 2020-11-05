@@ -1,0 +1,58 @@
+0: cd <project-root>
+
+1: Git clone
+git clone https://github.com/sunmiri/spark-java.git
+
+2: git checkout
+
+3: git pull (for latest)
+
+4: Eclipse -> Import Project -> Maven Project -> <project-root>/spark-java/
+
+5: Eclipse -> Select "pom.xml" -> Right Click -> Run Al ->  "Maven build..."
+goals: "clean compile install"
+
+6: Watch for zip file under <project-root>/spark-java/target
+
+7: cd <project-root>/spark-java/target
+
+8: scp spark-java-0.0.1-SNAPSHOT-bin.zip root@<virtualbox-ip>:/tmp
+
+9: ssh root@<virtualbox-ip>
+
+10: scp /tmp/spark-java-0.0.1-SNAPSHOT-bin.zip root@<hdp-sandbox-ip>:/tmp/
+
+11: ssh root@<hdp-sandbox-ip>
+
+12: Create Topics:
+[root@sandbox-hdp bin]# sh kafka-topics.sh --zookeeper sandbox-hdp.hortonworks.com:2181 --create --topic topic1 --partitions 2 --replication-factor 1
+Created topic "topic1".
+[root@sandbox-hdp bin]# sh kafka-topics.sh --zookeeper sandbox-hdp.hortonworks.com:2181 --create --topic topic2 --partitions 2 --replication-factor 1
+Created topic "topic2".
+
+13: Feed Data in to Topics
+JSON Data
+[root@sandbox-hdp bin]# sh ./kafka-console-producer.sh --broker-list sandbox-hdp.hortonworks.com:6667 --topic topic1
+{"item_name":"SKU00011","item_desc":"Sugar1","is_active":1}
+{"item_name":"SKU00022","item_desc":"Sugar2","is_active":1}
+{"item_name":"SKU00033","item_desc":"Sugar3","is_active":1}
+{"item_name":"SKU00044","item_desc":"Sugar4","is_active":1}
+{"item_name":"SKU00055","item_desc":"Sugar5","is_active":1}
+
+[root@sandbox-hdp bin]# sh ./kafka-console-producer.sh --broker-list sandbox-hdp.hortonworks.com:6667 --topic topic2
+{"item_name":"SKU00066","item_desc":"Sugar6","is_active":1}
+{"item_name":"SKU00077","item_desc":"Sugar7","is_active":1}
+{"item_name":"SKU00088","item_desc":"Sugar8","is_active":1}
+{"item_name":"SKU00099","item_desc":"Sugar9","is_active":1}
+
+12: mkdir ~/test
+
+13: cp /tmp/spark-java-0.0.1-SNAPSHOT-bin.zip ~/test
+
+14: cd ~/test
+
+15: jar -xvf spark-java-0.0.1-SNAPSHOT-bin.zip
+
+16: cd scripts
+
+17: sh runcmd_kafka2hive.sh
