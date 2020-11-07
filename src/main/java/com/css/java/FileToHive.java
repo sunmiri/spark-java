@@ -1,15 +1,19 @@
 package com.css.java;
 
+import static org.apache.spark.sql.functions.col;
+
 import java.io.FileReader;
 import java.io.Serializable;
 import java.util.Properties;
 
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoder;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 
+import com.css.java.bean.Items;
 import com.css.java.functions.FilterFun;
 import com.css.java.functions.FlatMapFun;
 import com.css.java.functions.MapFun;
@@ -44,12 +48,15 @@ public class FileToHive implements Serializable {
 	}
 
 	public void start() throws Exception {
+		Encoder<Items> itemsEncoder = Encoders.bean(Items.class);
+
 		Dataset<Row> itemDF = this.spark.read().format(props.getProperty("input.file.format"))
 				.option("sep", props.getProperty("input.file.seperator"))
 				.option("inferSchema", props.getProperty("input.file.inferSchema"))
 				.option("header", props.getProperty("input.file.with_header"))
 				.load(props.getProperty("input.file.name"));
 		System.out.println("start::itemDF:" + itemDF);
+
 		// start::itemDF:[item_name: string, item_desc: string ... 1 more field]
 		/**
 		 * +---------+------------+-----------------------------------------------------------------------------------------------------+
@@ -57,7 +64,17 @@ public class FileToHive implements Serializable {
 		 * +---------+------------+-----------------------------------------------------------------------------------------------------+
 		 * | SKU0001| Sugar| 1.0|
 		 */
-		itemDF.show(true);
+		itemDF.printSchema();
+		// itemDF.show(true);
+
+		Dataset<Items> itemDF1 = this.spark.read().format(props.getProperty("input.file.format"))
+				.option("sep", props.getProperty("input.file.seperator"))
+				.option("inferSchema", props.getProperty("input.file.inferSchema"))
+				.option("header", props.getProperty("input.file.with_header"))
+				.load(props.getProperty("input.file.name")).as(itemsEncoder);
+		System.out.println("start::itemDF1:" + itemDF1);
+		itemDF1.printSchema();
+		itemDF1.show(true);
 
 		// Action Call: For-Each:
 		// itemDF.foreach(new LoopFunction());
@@ -79,9 +96,15 @@ public class FileToHive implements Serializable {
 		// start::flatMapDF:[value: string]
 
 		Dataset<Row> filterDF = itemDF.filter(new FilterFun());
-		System.out.println("start::filterDF:" + filterDF);
+		Dataset<Row> filterDF1 = itemDF.filter(col("is_active").gt(0));
+		System.out.println("start::filterDF:" + filterDF + ", filterDF1:" + filterDF1);
 		filterDF.show(true);
+		filterDF1.show(true);
 		// start::filterDF:[item_name: string, item_desc: string ... 1 more field]
+
+		// Spark-SQL
+		itemDF.createOrReplaceTempView("items");
+		Dataset<Row> sqlDF = this.spark.sql("SELECT * FROM items where is_active=1");
 
 		// Action: Write
 		itemDF.write().mode(SaveMode.Overwrite) // .sortBy("item_name") // .partitionBy("is_active")
