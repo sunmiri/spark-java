@@ -54,13 +54,13 @@ public class KafkaToHive implements Serializable {
 		// .select("data.*");
 		// kafkaDF.foreach(new LoopFunction());
 
-		Dataset<Row> flatMapDF = kafkaDF.flatMap(new FlatMapFun(), Encoders.STRING());
-		Dataset<Row> filterDF = flatMapDF.filter(new FilterFun());
+		//Dataset<String> flatMapDF = kafkaDF.flatMap(new FlatMapFun(), Encoders.STRING());
+		//Dataset<Row> filterDF = kafkaDF.filter(new FilterFun());
 		// filterDF.write().mode(SaveMode.Append).json(props.getProperty("output.path"));
 		// Exception in thread "main" org.apache.spark.sql.AnalysisException: Complete
 		// output mode not supported when there are no streaming aggregations on
 		// streaming DataFrames/Datasets;;
-		filterDF.writeStream().outputMode("append").format("console").start().awaitTermination();
+		//filterDF.writeStream().outputMode("append").format("console").start().awaitTermination();
 		// Caused by: java.lang.ClassCastException:
 		// org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema cannot be cast
 		// to java.lang.String

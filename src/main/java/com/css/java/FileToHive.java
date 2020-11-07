@@ -12,7 +12,6 @@ import org.apache.spark.sql.SparkSession;
 
 import com.css.java.functions.FilterFun;
 import com.css.java.functions.FlatMapFun;
-import com.css.java.functions.LoopFunction;
 import com.css.java.functions.MapFun;
 
 /**
@@ -51,27 +50,44 @@ public class FileToHive implements Serializable {
 				.option("header", props.getProperty("input.file.with_header"))
 				.load(props.getProperty("input.file.name"));
 		System.out.println("start::itemDF:" + itemDF);
+		// start::itemDF:[item_name: string, item_desc: string ... 1 more field]
+		/**
+		 * +---------+------------+-----------------------------------------------------------------------------------------------------+
+		 * |item_name| item_desc|is_active |
+		 * +---------+------------+-----------------------------------------------------------------------------------------------------+
+		 * | SKU0001| Sugar| 1.0|
+		 */
 		itemDF.show(true);
 
 		// Action Call: For-Each:
-		itemDF.foreach(new LoopFunction());
+		// itemDF.foreach(new LoopFunction());
 
 		// Map: One-to-One Transformation call
-		Dataset<Row> mapDF = itemDF.map(new MapFun(), Encoders.STRING());
+		Dataset<String> mapDF1 = itemDF.map((Row r) -> r.getString(0), Encoders.STRING());
+		System.out.println("start::mapDF1:" + mapDF1);
+		mapDF1.show(true);
+
+		Dataset<String> mapDF = itemDF.map(new MapFun(), Encoders.STRING());
 		System.out.println("start::mapDF:" + mapDF);
+		mapDF.show(true);
+		// start::mapDF:[value: string]
 
 		// Flat-Map: One-to-Many Transformation Call
-		Dataset<Row> flatMapDF = itemDF.flatMap(new FlatMapFun(), Encoders.STRING());
+		Dataset<String> flatMapDF = itemDF.flatMap(new FlatMapFun(), Encoders.STRING());
 		System.out.println("start::flatMapDF:" + flatMapDF);
+		flatMapDF.show(true);
+		// start::flatMapDF:[value: string]
 
 		Dataset<Row> filterDF = itemDF.filter(new FilterFun());
 		System.out.println("start::filterDF:" + filterDF);
+		filterDF.show(true);
+		// start::filterDF:[item_name: string, item_desc: string ... 1 more field]
 
 		// Action: Write
 		itemDF.write().mode(SaveMode.Overwrite) // .sortBy("item_name") // .partitionBy("is_active")
 				.json(props.getProperty("output.path"));
 		System.out.println("start::itemDF done writing to path:" + props.getProperty("output.path"));
-		//https://stackoverflow.com/questions/52799025/error-using-spark-save-does-not-support-bucketing-right-now
+		// https://stackoverflow.com/questions/52799025/error-using-spark-save-does-not-support-bucketing-right-now
 
 	}
 
