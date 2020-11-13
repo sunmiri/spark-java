@@ -13,7 +13,7 @@ public class FilterFun implements Serializable, FilterFunction<Row> {
 	public boolean call(Row value) throws Exception {
 		log.info("call::value:" + value);
 		System.out.println("filter::value:" + value);
-		if (value.getDouble(3) == 0)
+		if (value.getInt(2) == 0)
 			return false;
 		return true;
 	}

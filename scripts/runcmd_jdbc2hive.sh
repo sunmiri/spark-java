@@ -8,11 +8,7 @@
 #exit
 
 #As root user (every time file changes)
-hadoop fs -mkdir -p /user/test/input/csv/
-hadoop fs -mkdir -p /user/test/output/json/
-#create and copy the csv file to sandbox
-hadoop fs -put -f ./items.csv /user/test/input/csv/
-hadoop fs -ls /user/test/input/csv/
+hadoop fs -mkdir -p /user/test/output/jdbc/json/
 
 #Execute
 export JAVA_HOME=/usr/bin/java
@@ -28,7 +24,7 @@ export SPARK_MAJOR_VERSION=2
 #export HADOOP_CONF_DIR="/usr/hdp/current/hadoop-client"
 
 
-echo "Submitting Spark Job File2Hive"
+echo "Submitting Spark Job Jdbc2Hive"
 
 
 /usr/hdp/current/spark2-client/bin/spark-submit \
@@ -38,8 +34,8 @@ echo "Submitting Spark Job File2Hive"
 --driver-memory 1G \
 --executor-memory 1G \
 --executor-cores 1 \
---class com.css.java.FileToHive \
-../bin/spark-java-0.0.1-SNAPSHOT.jar file2hive.properties
+--class com.css.java.JdbcToHive \
+../bin/spark-java-0.0.1-SNAPSHOT.jar jdbc2hive.properties
 
 
-hadoop fs -ls /user/test/output/json/
+hadoop fs -ls /user/test/output/jdbc/json/
