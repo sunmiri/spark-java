@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoder;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
@@ -48,7 +47,6 @@ public class FileToHive implements Serializable {
 	}
 
 	public void start() throws Exception {
-		Encoder<Items> itemsEncoder = Encoders.bean(Items.class);
 
 		Dataset<Row> itemDF = this.spark.read().format(props.getProperty("input.file.format"))
 				.option("sep", props.getProperty("input.file.seperator"))
@@ -65,16 +63,7 @@ public class FileToHive implements Serializable {
 		 * | SKU0001| Sugar| 1.0|
 		 */
 		itemDF.printSchema();
-		// itemDF.show(true);
-
-		Dataset<Items> itemDF1 = this.spark.read().format(props.getProperty("input.file.format"))
-				.option("sep", props.getProperty("input.file.seperator"))
-				.option("inferSchema", props.getProperty("input.file.inferSchema"))
-				.option("header", props.getProperty("input.file.with_header"))
-				.load(props.getProperty("input.file.name")).as(itemsEncoder);
-		System.out.println("start::itemDF1:" + itemDF1);
-		itemDF1.printSchema();
-		itemDF1.show(true);
+		itemDF.show(true);
 
 		// Action Call: For-Each:
 		// itemDF.foreach(new LoopFunction());
@@ -90,13 +79,14 @@ public class FileToHive implements Serializable {
 		// start::mapDF:[value: string]
 
 		// Flat-Map: One-to-Many Transformation Call
-		Dataset<String> flatMapDF = itemDF.flatMap(new FlatMapFun(), Encoders.STRING());
+		Dataset<Items> flatMapDF = itemDF.flatMap(new FlatMapFun(), Encoders.bean(Items.class));
 		System.out.println("start::flatMapDF:" + flatMapDF);
+		flatMapDF.printSchema();
 		flatMapDF.show(true);
 		// start::flatMapDF:[value: string]
 
 		Dataset<Row> filterDF = itemDF.filter(new FilterFun());
-		Dataset<Row> filterDF1 = itemDF.filter(col("is_active").gt(0));
+		Dataset<Row> filterDF1 = itemDF.filter(col("isActive").gt(0));
 		System.out.println("start::filterDF:" + filterDF + ", filterDF1:" + filterDF1);
 		filterDF.show(true);
 		filterDF1.show(true);
@@ -104,12 +94,11 @@ public class FileToHive implements Serializable {
 
 		// Spark-SQL
 		itemDF.createOrReplaceTempView("items");
-		Dataset<Row> sqlDF = this.spark.sql("SELECT * FROM items where is_active=1");
+		Dataset<Row> sqlDF = this.spark.sql("SELECT * FROM items where isActive=1");
 
 		// Action: Write
-		itemDF.write().mode(SaveMode.Overwrite) // .sortBy("item_name") // .partitionBy("is_active")
-				.json(props.getProperty("output.path"));
-		System.out.println("start::itemDF done writing to path:" + props.getProperty("output.path"));
+		flatMapDF.write().mode(SaveMode.Overwrite).partitionBy("createdDate").json(props.getProperty("output.path"));
+		System.out.println("start::flatMapDF done writing to path:" + props.getProperty("output.path"));
 		// https://stackoverflow.com/questions/52799025/error-using-spark-save-does-not-support-bucketing-right-now
 
 	}

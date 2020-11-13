@@ -1,6 +1,6 @@
-item_name,item_desc,is_active                                                                                            
-SKU0001,Sugar,1                                                                                                          
-SKU0002,Salt,1                                                                                                           
-SKU0003,Milk,1                                                                                                           
-SKU0004,Grade B Eggs,0                                                                                                   
-SKU0005,Grade A Eggs,1
+itemName,itemDesc,isActive,createdDate
+SKU0001,Sugar,1,2020-11-01
+SKU0002,Salt,1,2020-11-02
+SKU0003,Milk,1,2020-11-03
+SKU0004,Grade B Eggs,0,2020-11-04
+SKU0005,Grade A Eggs,1,2020-11-04
