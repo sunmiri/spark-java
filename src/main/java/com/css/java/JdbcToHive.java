@@ -1,5 +1,6 @@
 package com.css.java;
 
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +9,8 @@ import java.util.Properties;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+
+import com.css.java.functions.LoopFunction;
 
 /**
  * Spark Batch Job Read File from specified location
@@ -38,20 +41,29 @@ public class JdbcToHive {
 	public static final String DBNAME = "databaseName";
 	public static final String DATABASE = "DATABASE";
 
-	public JdbcToHive() {
+	public JdbcToHive(String arg) {
 		// Load Properties File
 		// Propetyfile: jdbc2hive.properties (add new)
 		// Important Key-Value to be included in the property file
 		// databasename,username,password,server,port,drivername
 		// drivername for mysql: com.mysql.jdbc.Driver
-		//
+		System.out.println("JdbcToHive::arg:" + arg);
+		try {
+			props = new Properties();
+			props.load(new FileReader(arg));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("JdbcToHive::props:" + props);
 
 		// Initialize SparkSession
-
+		this.spark = SparkSession.builder().appName(props.getProperty("app.name")).enableHiveSupport().getOrCreate();
 	}
 
 	public void start() throws Exception {
-		// Dataset<Row> dbdata = readSourceData();
+		Dataset<Row> dbdata = readSourceData();
+		dbdata.show(true);
+		dbdata.foreach(new LoopFunction());
 		// perform applicable filter. FilterFun (may have to change as per data inside
 		// the table)
 		// perform map MapFun (change logic as per your db columns). Create a POJO
@@ -69,19 +81,23 @@ public class JdbcToHive {
 
 		try {
 			ArrayList<String> al = new ArrayList<String>();
-			String query = "select * from items"; // write your query here. //TODO change this
+			String query = "select * from items where isactive=1"; // write your query here. //TODO change this
 			Map<String, String> options = new HashMap<String, String>();
 			options.put("driver", props.getProperty("dbdriver")); // TODO set this in property
 			options.put("url", "jdbc:mysql://" + props.getProperty("dbhost") + ":" + props.getProperty("dbport") + "/"
-					+ props.getProperty("dbname"));
+					+ props.getProperty("dbname") + "?useSSL=false");
 			// TODO set this in property
-			options.put("dbtable", query);
+			options.put("dbtable", props.getProperty("dbtable", "items"));
+			options.put("query", query);
+			options.put("pushDownPredicate", "true");
 			options.put("user", props.getProperty("dbuser")); // TODO set this in property
 			options.put("password", props.getProperty("dbpassword")); // TODO set this in property
-			Dataset<Row> jdbcDF = this.spark.read().format("jdbc").options(options).load(options.get("dbtable"));
+			System.out.println("readSourceData::connecting with options:" + options);
+			Dataset<Row> jdbcDF = this.spark.read().format("jdbc").options(options).load();
 			return jdbcDF;
 		} catch (Throwable t) {
 			System.out.println("Exception::" + t);
+			t.printStackTrace();
 		}
 		return null;
 	}
@@ -109,5 +125,15 @@ public class JdbcToHive {
 		connStringBuffer.append(EQUALS);
 		connStringBuffer.append(password);
 		return connStringBuffer.toString();
+	}
+
+	public void stop() {
+		this.spark.stop();
+	}
+
+	public static void main(String[] args) throws Exception {
+		JdbcToHive j2h = new JdbcToHive(args[0]);
+		j2h.start();
+		j2h.stop();
 	}
 }

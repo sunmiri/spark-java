@@ -1,8 +1,17 @@
 #COnnect to MYSQL server using user/password
 #mysql -u <user> -p <password> -h <host/localhost>
 
+#On Sandbox MySql
+mysql -uroot -phortonworks1 -hlocalhost
 create database sparktest;
+drop user sparktest;
+CREATE USER 'sparktest'@'%' IDENTIFIED BY 'sparktest';
+GRANT ALL PRIVILEGES ON * . * TO 'sparktest'@'%';
+FLUSH PRIVILEGES;
+exit;
 
+#Swithing connected to new sparktest user
+mysql -usparktest -psparktest -hlocalhost
 use sparktest;
 
 create table items (itemname char(50) not null, itemdesc char(50) not null, isactive tinyint(1) not null, createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
