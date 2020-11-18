@@ -1,3 +1,18 @@
+############## KAFKA ##############
+Topic List:
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper sandbox-hdp.hortonworks.com:2181 --list
+
+Create Topic
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper sandbox-hdp.hortonworks.com:2181 --create --topic topic1 --partitions 2 --replication-factor 1
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper sandbox-hdp.hortonworks.com:2181 --create --topic topic2 --partitions 2 --replication-factor 1
+
+Publish Data:
+/usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh --broker-list sandbox-hdp.hortonworks.com:6667 --topic topic1
+#Enter following JSON text data after you see ">"
+{"itemName":"apples", "itemDesc":"gala apples", "isActive":"1", "createdDate":"2020-11-15"}
+{"itemName":"bananas", "itemDesc":"yellow bananas", "isActive":"1", "createdDate":"2020-11-15"}
+
+############## YARN ##############
 #checking what spark applications are running?
 yarn application -list
 Application-Id,	    			Application-Name,	Application-Type,	User,	Queue,		State,		Final-State	 Progress,	Tracking-URL
@@ -11,6 +26,8 @@ vi yarnlogs_file2hive.log
 
 #get spark driver logs
 vi driverlogs_file2hive.log
+
+############## SPARK-LAUNCH ##############
 
 #Run program in background and redirect logs to a file
 nohup sh runcmd_file2hive.sh > driverlogs_file2hive.log &

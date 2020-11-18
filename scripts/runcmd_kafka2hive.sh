@@ -21,9 +21,10 @@ hadoop fs -mkdir -p /user/test/output/kafka/json/
 --master yarn \
 --deploy-mode client \
 --num-executors 1 \
---executor-memory 2G \
+--executor-memory 1G \
+--driver-memory 1G \
 --executor-cores 1 \
---class com.css.java.KafkaToHive \
+--class com.css.java.SSReadFromKafka \
 ../bin/spark-java-0.0.1-SNAPSHOT.jar kafka2hive.properties
 
 

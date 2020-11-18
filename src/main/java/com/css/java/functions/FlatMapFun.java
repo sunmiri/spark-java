@@ -19,19 +19,26 @@ public class FlatMapFun implements Serializable, FlatMapFunction<Row, Items> {
 	@Override
 	public Iterator<Items> call(Row t) throws Exception {
 		log.info("call::t:" + t);
-		System.out.println("flatmap::t:" + t);
+		System.out.println("flatmap.call::t:" + t);
 		ArrayList al = new ArrayList();
 
 		Items i = new Items();
+		String itemName = (String) t.getAs("itemName");
+		String itemDesc = (String) t.getAs("itemDesc");
+		String isActive = (String) t.getAs("isActive");
+		String createdDate = (String) t.getAs("createdDate");
+		System.out.println("flatmap.call::itemName:" + itemName + ", itemDesc:" + itemDesc + ", isActive:" + isActive
+				+ ", createdDate:" + createdDate);
 
-		i.setItemName(t.getString(0));
-		i.setItemDesc(t.getString(1));
-		if (t.getInt(2) == 1)
+		i.setItemName(itemName); // t.getString(0));
+		i.setItemDesc(itemDesc); // t.getString(1));
+
+		if (isActive.equals("1"))
 			i.setIsActive("Active");
 		else
 			i.setIsActive("In-Active");
-		String cd_str = sdf_out.format(t.getTimestamp(3));
-		i.setCreatedDate(cd_str);
+
+		i.setCreatedDate(createdDate);
 
 		al.add(i);
 

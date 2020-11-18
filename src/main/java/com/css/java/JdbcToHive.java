@@ -81,7 +81,7 @@ public class JdbcToHive {
 
 		try {
 			ArrayList<String> al = new ArrayList<String>();
-			String query = "select * from items where isactive=1"; // write your query here. //TODO change this
+			String query = "select * from items i, site s, sales sl where isactive=1"; // write your query here. //TODO change this
 			Map<String, String> options = new HashMap<String, String>();
 			options.put("driver", props.getProperty("dbdriver")); // TODO set this in property
 			options.put("url", "jdbc:mysql://" + props.getProperty("dbhost") + ":" + props.getProperty("dbport") + "/"
