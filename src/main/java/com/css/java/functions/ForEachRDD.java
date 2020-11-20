@@ -28,12 +28,12 @@ public class ForEachRDD implements Serializable, VoidFunction<JavaRDD<String>> {
 		Dataset<Row> rddDF = sqlContext.read().json(rdd);
 		System.out.println("call::rddDF:" + rddDF);
 		rddDF.printSchema();
-		rddDF.show(true);
+		//rddDF.show(true);
 
 		Dataset<Items> flatMapDF = rddDF.flatMap(new FlatMapFun(), Encoders.bean(Items.class));
 		System.out.println("call::flatMapDF:" + flatMapDF);
 		flatMapDF.printSchema();
-		flatMapDF.show(true);
+		//flatMapDF.show(true);
 		flatMapDF.write().mode(SaveMode.Append).partitionBy("createdDate").json(props.getProperty("output.path"));
 		System.out.println("call::flatMapDF done writing to path:" + props.getProperty("output.path"));
 	}

@@ -45,7 +45,17 @@ public class SSReadFromKafka implements Serializable {
 				new StructField[] { DataTypes.createStructField("itemName", DataTypes.StringType, false),
 						DataTypes.createStructField("itemDesc", DataTypes.StringType, false),
 						DataTypes.createStructField("isActive", DataTypes.IntegerType, false),
-						DataTypes.createStructField("createdDate", DataTypes.StringType, false) });
+						DataTypes.createStructField("createdDate", DataTypes.TimestampType, false) });
+
+		// count words within 1 minute windows, updating every 15 secs
+		Dataset<Row> windowedCounts = kafkaDF.selectExpr("CAST(value AS STRING) as message")
+				.select(org.apache.spark.sql.functions.from_json(org.apache.spark.sql.functions.col("message"), schema)
+						.as("json"))
+				// 1 minutes” as the threshold of how late is the data allowed to be
+				.select("json.*").withWatermark("createdDate", "2 minutes")
+				.groupBy(org.apache.spark.sql.functions.window(org.apache.spark.sql.functions.col("createdDate"),
+						"2 minutes", "20 seconds"), org.apache.spark.sql.functions.col("itemName"))
+				.count();
 
 		Dataset<Items> itemsDF = kafkaDF
 				.selectExpr("CAST(value AS STRING) as message").select(org.apache.spark.sql.functions
@@ -55,7 +65,7 @@ public class SSReadFromKafka implements Serializable {
 		// Exception in thread "main" org.apache.spark.sql.AnalysisException: Complete
 		// output mode not supported when there are no streaming aggregations on
 		// streaming DataFrames/Datasets;;
-		itemsDF.writeStream().outputMode("append").format("console").start().awaitTermination();
+		itemsDF.writeStream().outputMode("update").format("console").start().awaitTermination();
 		// Caused by: java.lang.ClassCastException:
 		// org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema cannot be cast
 		// to java.lang.String

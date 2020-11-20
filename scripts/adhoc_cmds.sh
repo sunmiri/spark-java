@@ -9,9 +9,8 @@ Create Topic
 Publish Data:
 /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh --broker-list sandbox-hdp.hortonworks.com:6667 --topic topic1
 #Enter following JSON text data after you see ">"
-{"itemName":"apples", "itemDesc":"gala apples", "isActive":"1", "createdDate":"2020-11-15"}
-{"itemName":"bananas", "itemDesc":"yellow bananas", "isActive":"1", "createdDate":"2020-11-15"}
-
+{"itemName":"apples", "itemDesc":"gala apples", "isActive":"1",     "createdDate":"2020-11-19T23.09:30"}
+{"itemName":"bananas", "itemDesc":"yellow bananas", "isActive":"1", "createdDate":"2020-11-19T23.09:30"}
 ############## YARN ##############
 #checking what spark applications are running?
 yarn application -list
