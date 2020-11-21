@@ -11,6 +11,14 @@ Publish Data:
 #Enter following JSON text data after you see ">"
 {"itemName":"apples", "itemDesc":"gala apples", "isActive":"1",     "createdDate":"2020-11-19T23.09:30"}
 {"itemName":"bananas", "itemDesc":"yellow bananas", "isActive":"1", "createdDate":"2020-11-19T23.09:30"}
+
+
+#CHeck Status
+#List Spark Applications connected to Kafka.
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh --bootstrap-server sandbox-hdp.hortonworks.com:6667 --list
+
+#Get details of an particular spark app like LAG's
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh --bootstrap-server sandbox-hdp.hortonworks.com:6667 --group atlas --describe
 ############## YARN ##############
 #checking what spark applications are running?
 yarn application -list

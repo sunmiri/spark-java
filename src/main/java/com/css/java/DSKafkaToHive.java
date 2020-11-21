@@ -11,6 +11,11 @@ import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
@@ -27,6 +32,8 @@ public class DSKafkaToHive implements Serializable {
 	Properties props;
 	SparkConf conf;
 	JavaStreamingContext jssc;
+	SparkSession spark;
+	Broadcast<Dataset<Row>> usersDFBC;
 
 	public DSKafkaToHive(String arg) {
 		try {
@@ -35,12 +42,21 @@ public class DSKafkaToHive implements Serializable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("KafkaDStreamToHive::props:" + props);
+		System.out.println("DSKafkaToHive::props:" + props);
 
-		conf = new SparkConf().setAppName(props.getProperty("app.name"));
-		jssc = new JavaStreamingContext(conf,
+		spark = SparkSession.builder().appName(props.getProperty("app.name")).enableHiveSupport().getOrCreate();
+		conf = spark.sparkContext().conf();
+		jssc = new JavaStreamingContext(new JavaSparkContext(spark.sparkContext()),
 				Durations.seconds(Integer.parseInt(props.getProperty("spark.batch.duration.secs", "5"))));
 
+		Dataset<Row> usersDF = this.spark.read().format(props.getProperty("input.file.format"))
+				.option("sep", props.getProperty("input.file.seperator"))
+				.option("inferSchema", props.getProperty("input.file.inferSchema"))
+				.option("header", props.getProperty("input.file.with_header"))
+				.load(props.getProperty("input.file.name"));
+		System.out.println("DSKafkaToHive::usersDF:" + usersDF);
+		usersDFBC = jssc.sparkContext().broadcast(usersDF);
+		System.out.println("DSKafkaToHive::Added usersDF to Broadcast::" + usersDFBC);
 	}
 
 	public void start() throws Exception {
@@ -64,7 +80,7 @@ public class DSKafkaToHive implements Serializable {
 		JavaDStream<String> jds = dstream.map(new MapFun2());
 		System.out.println("start::jds:" + jds);
 
-		jds.foreachRDD(new ForEachRDD(this.props));
+		jds.foreachRDD(new ForEachRDD(this.props, this.usersDFBC));
 
 		jssc.start();
 		jssc.awaitTermination();
