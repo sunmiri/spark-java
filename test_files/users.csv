@@ -1,0 +1,5 @@
+userName,displayName,isActive,createdDate,lastModifiedDate
+User1,User1,1,2019-11-01,2020-11-01
+User2,User2,1,2019-11-02,2020-11-02
+User3,User3,1,2019-11-03,2020-11-03
+User3,User4,0,2019-11-04,2020-11-04
